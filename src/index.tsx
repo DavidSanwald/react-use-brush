@@ -33,15 +33,12 @@ function getCoordsFromEvent(
   node: SVGSVGElement,
   event: React.MouseEvent
 ): Position | null {
-  console.log(node);
   if (!node) return null;
   const svg = node.ownerSVGElement || node;
   if (svg.createSVGPoint) {
     let point = svg.createSVGPoint();
-    console.log('before: ', point.x);
     point.x = event.clientX;
     point.y = event.clientY;
-    console.log('after: ', point.y);
     point = point.matrixTransform(node.getScreenCTM()!.inverse());
     return {
       x: point.x,
