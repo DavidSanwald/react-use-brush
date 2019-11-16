@@ -1,4 +1,4 @@
-import React, { useCallback } from 'react';
+import React from 'react';
 
 type Action =
   | {
@@ -104,20 +104,22 @@ const initialState: State = {
 const useBrush = () => {
   const [state, dispatch] = React.useReducer(reducer, initialState);
   const ref = React.useRef<null | SVGElement>();
+
   const onMouseDown = (e: React.MouseEvent<SVGElement>) => {
     const coords = getCoordsFromEvent(ref.current as SVGSVGElement, e);
-    dispatch({ type: 'MOUSE_DOWN', payload: coords as any });
+    dispatch({ type: 'MOUSE_DOWN', payload: coords! });
   };
   const onMouseUp = () => {
     dispatch({ type: 'MOUSE_UP' });
   };
   const onMouseMove = (e: React.MouseEvent<SVGElement>) => {
     const coords = getCoordsFromEvent(ref.current as SVGSVGElement, e);
-    dispatch({ type: 'MOUSE_MOVE', payload: coords as any });
+    dispatch({ type: 'MOUSE_MOVE', payload: coords! });
   };
   const onMouseLeave = ({ clientX, clientY }: React.MouseEvent<SVGElement>) => {
     dispatch({ type: 'MOUSE_LEAVE', payload: { x: clientX, y: clientY } });
   };
+
   React.useEffect(() => {
     window.addEventListener('mouseup', onMouseUp);
     return () => window.removeEventListener('mouseup', onMouseUp);
@@ -125,7 +127,7 @@ const useBrush = () => {
 
   const bind = { onMouseDown, onMouseMove, onMouseLeave, ref };
   const rect = calculateRectangle(state.startPosition, state.currentPosition);
-  const isInsideCB = useCallback(
+  const isInsideCB = React.useCallback(
     isInside(rect.x, rect.y, rect.width, rect.height),
     [rect.height, rect.width, rect.x, rect.y]
   );
