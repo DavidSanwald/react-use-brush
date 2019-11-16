@@ -13,6 +13,7 @@ type Action =
       type: 'MOUSE_LEAVE';
       payload: Position;
     };
+
 type Position = {
   x: number;
   y: number;
@@ -51,6 +52,7 @@ function getCoordsFromEvent(
     y: event.clientY - rect.top - node.clientTop,
   };
 }
+
 const isInside = (x: number, y: number, width: number, height: number) => (
   xPos: number,
   yPos: number
@@ -59,6 +61,7 @@ const isInside = (x: number, y: number, width: number, height: number) => (
   const yInside = y < yPos && yPos < y + height;
   return xInside && yInside;
 };
+
 function calculateRectangle(start: Position, current: Position) {
   const { x: startX, y: startY } = start;
   const { x: currentX, y: currentY } = current;
@@ -91,6 +94,7 @@ function reducer(state: State, action: Action): State {
       return state;
   }
 }
+
 const initialState: State = {
   startPosition: { x: 0, y: 0 },
   currentPosition: { x: 0, y: 0 },
@@ -99,7 +103,7 @@ const initialState: State = {
 
 const useBrush = () => {
   const [state, dispatch] = React.useReducer(reducer, initialState);
-  const ref: any = React.useRef<null | SVGElement>();
+  const ref = React.useRef<null | SVGElement>();
   const onMouseDown = (e: React.MouseEvent<SVGElement>) => {
     const coords = getCoordsFromEvent(ref.current as SVGSVGElement, e);
     dispatch({ type: 'MOUSE_DOWN', payload: coords as any });
