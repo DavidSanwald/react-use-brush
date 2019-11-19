@@ -4,7 +4,7 @@ import { scaleLinear } from 'd3-scale';
 import * as React from 'react';
 import * as ReactDOM from 'react-dom';
 
-import { useBrush } from '../.';
+import { inBounds, useBrush } from '../.';
 import { bubbleData as data } from './data';
 
 const size = { width: 900, height: 600 };
@@ -22,16 +22,25 @@ const App = () => {
   const yScale = scaleLinear()
     .range([height, 0])
     .domain(extent(data.map(d => d.y)));
-  const [state, rect, bind, isInsideCb] = useBrush();
+  const [state, rect, bind, selection] = useBrush();
 
   return (
     <svg {...bind} width={width} height={height}>
-      {state.status === 'BRUSHING' && (
-        <rect {...rect} fill="none" stroke="black" />
-      )}
-      {data.map(({ x, y, name }) => (
-        <circle cx={xScale(x)} cy={yScale(y)} r="5" fill="red" key={name} />
-      ))}
+      <rect {...rect} fill="none" stroke="black" />
+      {data.map(({ x, y, name }) => {
+        const cx = xScale(x);
+        const cy = yScale(y);
+        const inside = inBounds(selection)([cx, cy]);
+        return (
+          <circle
+            cx={cx}
+            cy={cy}
+            r="5"
+            fill={inside ? 'red' : 'blue'}
+            key={name}
+          />
+        );
+      })}
     </svg>
   );
 };
