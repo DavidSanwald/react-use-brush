@@ -3,37 +3,80 @@ import React from 'react';
 type Action =
   | {
       type: 'MOUSE_DOWN';
-      payload: Position;
+      payload: Point;
     }
-  | { type: 'MOUSE_MOVE'; payload: Position }
+  | { type: 'MOUSE_MOVE'; payload: Point }
   | {
       type: 'MOUSE_UP';
     }
   | {
       type: 'MOUSE_LEAVE';
-      payload: Position;
     };
 
-type Position = {
+type Dimensions = {
+  start: Point;
+  current: Point;
+};
+type Bounds = {
+  left: number;
+  right: number;
+  lower: number;
+  upper: number;
+};
+
+type Rect = {
+  width: number;
+  height: number;
   x: number;
   y: number;
 };
 
-type Status = 'IDLE' | 'BRUSHING';
+type Point = [number, number];
 
-type State = {
-  startPosition: Position;
-  currentPosition: Position;
-  status: Status;
+type ClosedBrush = Dimensions & {
+  status: 'CLOSED';
+  selection: Dimensions;
+};
+type OpenBrush = Dimensions & {
+  status: 'BRUSHING' | 'BRUSH_START';
 };
 
-type YDirection = 'UP' | 'DOWN';
-type XDirection = 'LEFT' | 'RIGHT';
+type Brush = OpenBrush | ClosedBrush;
+
+const dimsToRect = <T extends Dimensions>(dims: T): Rect => {
+  const {
+    start: [xS, yS],
+    current: [xC, yC],
+  } = dims;
+  const x = Math.min(xS, xC);
+  const y = Math.min(yS, yC);
+  const width = Math.max(xS, xC) - x;
+  const height = Math.max(yS, yC) - y;
+  return { x, y, width, height };
+};
+const inBounds = (bounds: Bounds) => (point: Point) => {
+  const [x, y] = point;
+  const { left, right, upper, lower } = bounds;
+  return (x - left) * (x - right) < 0 && (y - lower) * (y - upper) < 0;
+};
+
+const dimsToBounds = <T extends Dimensions>(dims: T): Bounds => {
+  const {
+    start: [xS, yS],
+    current: [xC, yC],
+  } = dims;
+  return {
+    left: Math.min(xS, xC),
+    right: Math.max(xS, xC),
+    upper: Math.min(yS, yC),
+    lower: Math.max(yS, yC),
+  };
+};
 
 function getCoordsFromEvent(
   node: SVGSVGElement,
   event: React.MouseEvent
-): Position | null {
+): Point | null {
   if (!node) return null;
   const svg = node.ownerSVGElement || node;
   if (svg.createSVGPoint) {
@@ -41,64 +84,66 @@ function getCoordsFromEvent(
     point.x = event.clientX;
     point.y = event.clientY;
     point = point.matrixTransform(node.getScreenCTM()!.inverse());
-    return {
-      x: point.x,
-      y: point.y,
-    };
+    return [point.x, point.y];
   }
   const rect = node.getBoundingClientRect();
-  return {
-    x: event.clientX - rect.left - node.clientLeft,
-    y: event.clientY - rect.top - node.clientTop,
-  };
+  return [
+    event.clientX - rect.left - node.clientLeft,
+    event.clientY - rect.top - node.clientTop,
+  ];
 }
 
-const isInside = (x: number, y: number, width: number, height: number) => (
-  xPos: number,
-  yPos: number
-) => {
-  const xInside = x < xPos && xPos < x + width;
-  const yInside = y < yPos && yPos < y + height;
-  return xInside && yInside;
+const closeBrush = (brush: Brush): ClosedBrush => {
+  return {
+    status: 'CLOSED',
+    start: [0, 0],
+    current: [0, 0],
+    selection: {
+      start: brush.start,
+      current: brush.current,
+    },
+  };
 };
 
-function calculateRectangle(start: Position, current: Position) {
-  const { x: startX, y: startY } = start;
-  const { x: currentX, y: currentY } = current;
-  const yDirection: YDirection = startY - currentY <= 0 ? 'DOWN' : 'UP';
-  const xDirection: XDirection = startX - currentX <= 0 ? 'RIGHT' : 'LEFT';
+const sizeBrush = (brush: Brush, point: Point): OpenBrush => {
   return {
-    x: xDirection === 'RIGHT' ? startX : currentX,
-    y: yDirection === 'DOWN' ? startY : currentY,
-    width: Math.abs(startX - currentX),
-    height: Math.abs(startY - currentY),
-    pointerEvents: 'none',
+    ...brush,
+    status: 'BRUSHING',
+    start: brush.start,
+    current: point,
   };
-}
-
-function reducer(state: State, action: Action): State {
+};
+function reducer(state: Brush, action: Action): Brush {
   switch (action.type) {
     case 'MOUSE_DOWN':
       return {
         ...state,
-        startPosition: action.payload,
-        status: 'BRUSHING',
+        start: action.payload,
+        current: action.payload,
+        status: 'BRUSH_START',
       };
+    case 'MOUSE_MOVE':
+      return state.status === 'BRUSHING' || state.status === 'BRUSH_START'
+        ? sizeBrush(state, action.payload)
+        : state;
     case 'MOUSE_UP':
-      return { ...state, status: 'IDLE' };
+      return closeBrush(state);
     case 'MOUSE_LEAVE':
       return state;
-    case 'MOUSE_MOVE':
-      return { ...state, currentPosition: action.payload };
     default:
       return state;
   }
 }
 
-const initialState: State = {
-  startPosition: { x: 0, y: 0 },
-  currentPosition: { x: 0, y: 0 },
-  status: 'IDLE',
+const initialState: Brush = {
+  start: [0, 0],
+  current: [0, 0],
+  status: 'CLOSED',
+  selection: { start: [0, 0], current: [0, 0] },
+};
+const getSelection = (brush: Brush): Bounds => {
+  if (brush.status === 'CLOSED') return dimsToBounds(brush.selection);
+  return dimsToBounds(brush);
 };
 
 const useBrush = () => {
@@ -107,6 +152,7 @@ const useBrush = () => {
 
   const onMouseDown = (e: React.MouseEvent<SVGElement>) => {
     const coords = getCoordsFromEvent(ref.current as SVGSVGElement, e);
+
     dispatch({ type: 'MOUSE_DOWN', payload: coords! });
   };
   const onMouseUp = () => {
@@ -116,8 +162,8 @@ const useBrush = () => {
     const coords = getCoordsFromEvent(ref.current as SVGSVGElement, e);
     dispatch({ type: 'MOUSE_MOVE', payload: coords! });
   };
-  const onMouseLeave = ({ clientX, clientY }: React.MouseEvent<SVGElement>) => {
-    dispatch({ type: 'MOUSE_LEAVE', payload: { x: clientX, y: clientY } });
+  const onMouseLeave = () => {
+    dispatch({ type: 'MOUSE_LEAVE' });
   };
 
   React.useEffect(() => {
@@ -126,12 +172,9 @@ const useBrush = () => {
   });
 
   const bind = { onMouseDown, onMouseMove, onMouseLeave, ref };
-  const rect = calculateRectangle(state.startPosition, state.currentPosition);
-  const isInsideCB = React.useCallback(
-    isInside(rect.x, rect.y, rect.width, rect.height),
-    [rect.height, rect.width, rect.x, rect.y]
-  );
-  return [state, rect, bind, isInsideCB] as const;
+  const selection = getSelection(state);
+  const rect = dimsToRect(state);
+  return [state, rect, bind, selection] as const;
 };
 
-export { useBrush };
+export { useBrush, reducer, Action, Brush, inBounds };
