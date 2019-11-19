@@ -117,7 +117,6 @@ function reducer(state: Brush, action: Action): Brush {
   switch (action.type) {
     case 'MOUSE_DOWN':
       return {
-        ...state,
         start: action.payload,
         current: action.payload,
         status: 'BRUSH_START',
