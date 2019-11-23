@@ -208,7 +208,7 @@ const getSelection = (brush: Brush): Bounds => {
   return dimsToBounds(brush);
 };
 
-const useBrush = (isDragging = true) => {
+const useBrush = (isDragging = false) => {
   const [state, dispatch] = React.useReducer(
     isDragging ? dragReducer : reducer,
     initialState
