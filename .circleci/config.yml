@@ -37,8 +37,8 @@ jobs:
   release:
     <<: *defaults
     steps:
-      - checkout
-      - run: npm i
+      - attach_workspace:
+          at: ~/repo
       - run: npx semantic-release
 
 workflows:
