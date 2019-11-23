@@ -43,9 +43,9 @@ jobs:
 
 workflows:
   version: 2
-  test-deploy:
+  test-release:
     jobs:
-      - test:
+      - test
       - release:
           requires:
             - test
