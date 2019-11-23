@@ -23,6 +23,9 @@
     "commit": "npx git-cz",
     "semantic-release": "semantic-release"
   },
+  "publishConfig": {
+    "tag": "experimental"
+  },
   "config": {
     "commitizen": {
       "path": "./node_modules/cz-conventional-changelog"
