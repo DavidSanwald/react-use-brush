@@ -34,31 +34,18 @@ jobs:
       - persist_to_workspace:
           root: ~/repo
           paths: .
-  deploy:
+  release:
     <<: *defaults
     steps:
-      - attach_workspace:
-          at: ~/repo
-      - run:
-          name: Authenticate with registry
-          command: echo "//registry.npmjs.org/:_authToken=$npm_TOKEN" > ~/repo/.npmrc
-      - run:
-          name: Publish package
-          command: npm run semantic-release
+      - checkout
+      - run: npm i
+      - npx semantic-release
 
 workflows:
   version: 2
   test-deploy:
     jobs:
       - test:
-          filters:
-            tags:
-              only: /^v.*/
-      - deploy:
+      - release:
           requires:
             - test
-          filters:
-            tags:
-              only: /^v.*/
-            branches:
-              ignore: /.*/
