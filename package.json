@@ -1,6 +1,6 @@
 {
   "name": "react-use-brush",
-  "version": "0.2.0",
+  "version": "0.0.0-development",
   "license": "MIT",
   "author": "DavidSanwald",
   "repository": {
@@ -20,7 +20,8 @@
     "test:watch": "tsdx test --env=jsdom --watch",
     "lint": "tsdx lint",
     "release": "semantic-release",
-    "commit": "npx git-cz"
+    "commit": "npx git-cz",
+    "semantic-release": "semantic-release"
   },
   "config": {
     "commitizen": {

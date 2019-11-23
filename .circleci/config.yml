@@ -1,65 +1,45 @@
-# Javascript Node CircleCI 2.0 configuration file
-#
-# Check {{ '/2.0/language-javascript/' | docs_url }} for more details
-#
 version: 2
-
 defaults: &defaults
   working_directory: ~/repo
   docker:
-    - image: circleci/node:12.6.0
+    - image: circleci/node:lastest
 
 jobs:
   test:
     <<: *defaults
     steps:
       - checkout
-
       - restore_cache:
-          keys:
-            - v1-dependencies-{{ checksum "package.json" }}
-            # fallback to using the latest cache if no exact match is found
-            - v1-dependencies-
+        keys:
+          - v1-dependencies-{{ checksum "package.json" }}
+          - v1-dependencies-
 
-      - run: npm install
-      - run:
-          name: Run tests
-          command: npm test
-
+      - run: npm i
+      - run: npm build
+      - run: npm test
       - save_cache:
-          paths:
-            - node_modules
-          key: v1-dependencies-{{ checksum "package.json" }}
+        paths:
+          - node_modules
+        key: v1-dependencies-{{ checksum "package.json" }}
 
       - persist_to_workspace:
-          root: ~/repo
-          paths: .
-  deploy:
+        root: ~/repo
+        paths: .
+
+  release:
     <<: *defaults
     steps:
-      - attach_workspace:
-          at: ~/repo
-      - run:
-          name: Authenticate with registry
-          command: echo "//registry.npmjs.org/:_authToken=$npm_TOKEN" > ~/repo/.npmrc
-      - run:
-          name: Publish package
-          command: npm publish
-          command: npm publish
+      - checkout
+      - run: npm install
+      - run: npm build
+      - run: npx semantic-release
 
 workflows:
   version: 2
-  test-deploy:
+  test_and_release:
+    # Run the test jobs first, then the release only when all the test jobs are successful
     jobs:
-      - test:
-          filters:
-            tags:
-              only: /^v.*/
-      - deploy:
+      - test
+      - release:
           requires:
             - test
-          filters:
-            tags:
-              only: /^v.*/
-            branches:
-              ignore: /.*/
