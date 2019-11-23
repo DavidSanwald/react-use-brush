@@ -242,8 +242,9 @@ const useBrush = (isDragging = true) => {
 
   const bind = { onMouseDown, onMouseMove, onMouseLeave, ref };
   const selection = getSelection(state);
-  const rect = dimsToRect(state);
-  // console.log(state);
+  const rect = isDragging
+    ? dimsToRect(state)
+    : { ...dimsToRect(state), pointerEvents: 'none' };
   return [state, rect, rectRef, bind, selection] as const;
 };
 
