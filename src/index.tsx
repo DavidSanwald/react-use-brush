@@ -202,6 +202,7 @@ const initialState: Brush = {
   status: 'CLOSED',
   selection: { start: [0, 0], current: [0, 0] },
 };
+
 const getSelection = (brush: Brush): Bounds => {
   if (brush.status === 'CLOSED') return dimsToBounds(brush.selection);
   return dimsToBounds(brush);
