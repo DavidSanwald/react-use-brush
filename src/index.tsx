@@ -2,12 +2,19 @@ import React from 'react';
 
 type Action =
   | {
+      type: 'MOUSE_DOWN_INSIDE';
+      payload: Point;
+    }
+  | {
       type: 'MOUSE_DOWN';
       payload: Point;
     }
   | { type: 'MOUSE_MOVE'; payload: Point }
   | {
       type: 'MOUSE_UP';
+    }
+  | {
+      type: 'MOUSE_LEAVE';
     }
   | {
       type: 'MOUSE_LEAVE';
@@ -37,11 +44,15 @@ type ClosedBrush = Dimensions & {
   status: 'CLOSED';
   selection: Dimensions;
 };
-type OpenBrush = Dimensions & {
-  status: 'BRUSHING' | 'BRUSH_START';
+type BrushingBrush = Dimensions & {
+  status: 'BRUSHING' | 'BRUSH_START' | 'BRUSH_END';
+};
+type DraggingBrush = Dimensions & {
+  status: 'DRAG_START' | 'DRAGGING' | 'DRAG_END';
+  previousPosition: Point;
 };
 
-type Brush = OpenBrush | ClosedBrush;
+type Brush = BrushingBrush | ClosedBrush | DraggingBrush;
 
 const dimsToRect = <T extends Dimensions>(dims: T): Rect => {
   const {
@@ -105,14 +116,14 @@ const closeBrush = (brush: Brush): ClosedBrush => {
   };
 };
 
-const sizeBrush = (brush: Brush, point: Point): OpenBrush => {
+const sizeBrush = (brush: Brush, point: Point): BrushingBrush => {
   return {
-    ...brush,
     status: 'BRUSHING',
     start: brush.start,
     current: point,
   };
 };
+
 function reducer(state: Brush, action: Action): Brush {
   switch (action.type) {
     case 'MOUSE_DOWN':
@@ -134,6 +145,57 @@ function reducer(state: Brush, action: Action): Brush {
   }
 }
 
+const addPoints = (pointA: Point, pointB: Point): Point => [
+  pointA[0] + pointB[0],
+  pointA[1] + pointB[1],
+];
+
+const moveBrush = (point: Point, brush: DraggingBrush): DraggingBrush => {
+  const diff: Point = [
+    point[0] - brush.previousPosition[0],
+    point[1] - brush.previousPosition[1],
+  ];
+  return {
+    status: 'DRAGGING',
+    start: addPoints(brush.start, diff),
+    current: addPoints(brush.current, diff),
+    previousPosition: point,
+  };
+};
+
+function dragReducer(state: Brush, action: Action): Brush {
+  switch (action.type) {
+    case 'MOUSE_DOWN':
+      return {
+        status: 'BRUSH_START',
+        start: action.payload,
+        current: action.payload,
+      };
+    case 'MOUSE_DOWN_INSIDE':
+      return {
+        ...state,
+        status: 'DRAG_START',
+        previousPosition: action.payload,
+      };
+    case 'MOUSE_MOVE':
+      return state.status === 'BRUSHING' || state.status === 'BRUSH_START'
+        ? sizeBrush(state, action.payload)
+        : state.status === 'DRAG_START' || state.status === 'DRAGGING'
+        ? moveBrush(action.payload, state)
+        : { ...state };
+    case 'MOUSE_UP':
+      return state.status === 'BRUSHING'
+        ? { ...state, status: 'BRUSH_END' }
+        : state.status === 'DRAGGING'
+        ? { ...state, status: 'DRAG_END' }
+        : { ...state };
+    case 'MOUSE_LEAVE':
+      return state;
+    default:
+      return state;
+  }
+}
+
 const initialState: Brush = {
   start: [0, 0],
   current: [0, 0],
@@ -145,14 +207,22 @@ const getSelection = (brush: Brush): Bounds => {
   return dimsToBounds(brush);
 };
 
-const useBrush = () => {
-  const [state, dispatch] = React.useReducer(reducer, initialState);
+const useBrush = (isDragging = true) => {
+  const [state, dispatch] = React.useReducer(
+    isDragging ? dragReducer : reducer,
+    initialState
+  );
   const ref = React.useRef<null | SVGElement>();
+  const rectRef = React.useRef<null | SVGElement>();
 
   const onMouseDown = (e: React.MouseEvent<SVGElement>) => {
+    e.persist();
     const coords = getCoordsFromEvent(ref.current as SVGSVGElement, e);
-
-    dispatch({ type: 'MOUSE_DOWN', payload: coords! });
+    if (rectRef.current && !rectRef.current.contains(e.target as Node)) {
+      dispatch({ type: 'MOUSE_DOWN', payload: coords! });
+    } else {
+      dispatch({ type: 'MOUSE_DOWN_INSIDE', payload: coords! });
+    }
   };
   const onMouseUp = () => {
     dispatch({ type: 'MOUSE_UP' });
@@ -173,7 +243,8 @@ const useBrush = () => {
   const bind = { onMouseDown, onMouseMove, onMouseLeave, ref };
   const selection = getSelection(state);
   const rect = dimsToRect(state);
-  return [state, rect, bind, selection] as const;
+  // console.log(state);
+  return [state, rect, rectRef, bind, selection] as const;
 };
 
 export { useBrush, reducer, Action, Brush, inBounds };
