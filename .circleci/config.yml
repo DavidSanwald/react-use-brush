@@ -38,6 +38,8 @@ jobs:
   deploy-demo:
     <<: *defaults
     steps:
+      - attach_workspace:
+          at: ~/repo
       - checkout
       - run: cd example && npm install
       - run:
