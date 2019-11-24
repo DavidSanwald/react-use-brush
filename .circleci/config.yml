@@ -51,7 +51,7 @@ jobs:
           command: npm build
       - run:
           name: Deploy Example
-          command: npx netlify:doploy
+          command: npx netlify:deploy
 
       - save_cache:
           paths:
