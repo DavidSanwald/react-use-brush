@@ -43,7 +43,7 @@ jobs:
       - run: npm install
       - run:
           name: Build Example
-          command: npm build
+          command: npm run build
       - run:
           name: Deploy Example
           command: npm run netlify:deploy
