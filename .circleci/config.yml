@@ -39,7 +39,8 @@ jobs:
     steps:
       - attach_workspace:
           at: ~/repo
-      - run: npx semantic-release
+      - run: npm build
+      - run: npx semantic-release || true
 
 workflows:
   version: 2
