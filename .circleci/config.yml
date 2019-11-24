@@ -46,7 +46,7 @@ jobs:
           command: npm build
       - run:
           name: Deploy Example
-          command: npx netlify:deploy
+          command: npm run netlify:deploy
   release:
     <<: *defaults
     steps:
