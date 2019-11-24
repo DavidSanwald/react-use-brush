@@ -37,16 +37,15 @@ jobs:
 
   deploy-demo:
     <<: *defaults
-    working_directory: ~/repo/example
     steps:
       - checkout
-      - run: npm install
+      - run: cn example && npm install
       - run:
           name: Build Example
-          command: npm run build
+          command: cd example && npm run build
       - run:
           name: Deploy Example
-          command: npm run netlify:deploy
+          command: cd example && npm run netlify:deploy
   release:
     <<: *defaults
     steps:
