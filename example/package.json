@@ -5,7 +5,8 @@
   "license": "MIT",
   "scripts": {
     "start": "parcel index.html",
-    "build": "parcel build index.html"
+    "build": "parcel build index.html",
+    "netlify:deploy": "npx netlify deploy --dir=./dist -p -m \"$(git log -1 --pretty=%B)\""
   },
   "dependencies": {
     "d3-scale": "^3.2.0",
