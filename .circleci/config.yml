@@ -39,7 +39,7 @@ jobs:
     <<: *defaults
     steps:
       - checkout
-      - run: cn example && npm install
+      - run: cd example && npm install
       - run:
           name: Build Example
           command: cd example && npm run build
