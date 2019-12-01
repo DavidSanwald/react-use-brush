@@ -26,7 +26,8 @@ const App = () => {
   const rScale = scaleSqrt()
     .range([5, 40])
     .domain(extent(data.map(d => d.z)));
-  const [state, rect, rectRef, bind, selection] = useBrush();
+
+  const [state, rect, rectRef, bind, selection] = useBrush({ dragMode: true });
 
   return (
     <>
