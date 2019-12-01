@@ -124,6 +124,31 @@ const sizeBrush = (brush: Brush, point: Point): BrushingBrush => {
   };
 };
 
+const subtractPoints = (pointA: Point, pointB: Point): Point => [
+  pointA[0] - pointB[0],
+  pointA[1] - pointB[1],
+];
+
+const addPoints = (pointA: Point, pointB: Point): Point => [
+  pointA[0] + pointB[0],
+  pointA[1] + pointB[1],
+];
+
+const moveBrush = (point: Point, brush: DraggingBrush): DraggingBrush => {
+  const diff: Point = subtractPoints(point, brush.previousPosition);
+  return {
+    status: 'DRAGGING',
+    start: addPoints(brush.start, diff),
+    current: addPoints(brush.current, diff),
+    previousPosition: point,
+  };
+};
+
+const getSelection = (brush: Brush): Bounds => {
+  if (brush.status === 'CLOSED') return dimsToBounds(brush.selection);
+  return dimsToBounds(brush);
+};
+
 function reducer(state: Brush, action: Action): Brush {
   switch (action.type) {
     case 'MOUSE_DOWN':
@@ -144,24 +169,6 @@ function reducer(state: Brush, action: Action): Brush {
       return state;
   }
 }
-
-const addPoints = (pointA: Point, pointB: Point): Point => [
-  pointA[0] + pointB[0],
-  pointA[1] + pointB[1],
-];
-
-const moveBrush = (point: Point, brush: DraggingBrush): DraggingBrush => {
-  const diff: Point = [
-    point[0] - brush.previousPosition[0],
-    point[1] - brush.previousPosition[1],
-  ];
-  return {
-    status: 'DRAGGING',
-    start: addPoints(brush.start, diff),
-    current: addPoints(brush.current, diff),
-    previousPosition: point,
-  };
-};
 
 function dragReducer(state: Brush, action: Action): Brush {
   switch (action.type) {
@@ -184,7 +191,7 @@ function dragReducer(state: Brush, action: Action): Brush {
         ? moveBrush(action.payload, state)
         : { ...state };
     case 'MOUSE_UP':
-      return state.status === 'BRUSHING'
+      return state.status === 'BRUSHING' || state.status === 'BRUSH_START'
         ? { ...state, status: 'BRUSH_END' }
         : state.status === 'DRAGGING'
         ? { ...state, status: 'DRAG_END' }
@@ -203,14 +210,9 @@ const initialState: Brush = {
   selection: { start: [0, 0], current: [0, 0] },
 };
 
-const getSelection = (brush: Brush): Bounds => {
-  if (brush.status === 'CLOSED') return dimsToBounds(brush.selection);
-  return dimsToBounds(brush);
-};
-
-const useBrush = (isDragging = false) => {
+const useBrush = ({ dragMode = true } = {}) => {
   const [state, dispatch] = React.useReducer(
-    isDragging ? dragReducer : reducer,
+    dragMode ? dragReducer : reducer,
     initialState
   );
   const ref = React.useRef<null | SVGElement>();
@@ -243,10 +245,10 @@ const useBrush = (isDragging = false) => {
 
   const bind = { onMouseDown, onMouseMove, onMouseLeave, ref };
   const selection = getSelection(state);
-  const rect = isDragging
+  const rect = dragMode
     ? dimsToRect(state)
     : { ...dimsToRect(state), pointerEvents: 'none' };
   return [state, rect, rectRef, bind, selection] as const;
 };
 
-export { useBrush, reducer, Action, Brush, inBounds };
+export { useBrush, reducer, dragReducer, Action, Brush, inBounds };
