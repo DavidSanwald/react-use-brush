@@ -1,8 +1,52 @@
-# React Brush Hook
+<h1 align="center">Welcome to react-use-brush 👋</h1>
+<p>
+  <a href="https://www.npmjs.com/package/react-use-brush" target="_blank">
+    <img alt="Version" src="https://img.shields.io/npm/v/react-use-brush.svg">
+  </a>
+  <a href="https://github.com/DavidSanwald/react-use-brush#readme" target="_blank">
+    <img alt="Documentation" src="https://img.shields.io/badge/documentation-yes-brightgreen.svg" />
+  </a>
+  <a href="https://github.com/DavidSanwald/react-use-brush/graphs/commit-activity" target="_blank">
+    <img alt="Maintenance" src="https://img.shields.io/badge/Maintained%3F-yes-green.svg" />
+  </a>
+  <a href="https://github.com/DavidSanwald/react-use-brush/blob/master/LICENSE" target="_blank">
+    <img alt="License: MIT" src="https://img.shields.io/github/license/DavidSanwald/react-use-brush" />
+  </a>
+  <a href="https://twitter.com/davidsanwald" target="_blank">
+    <img alt="Twitter: davidsanwald" src="https://img.shields.io/twitter/follow/davidsanwald.svg?style=social" />
+  </a>
+</p>
 
+> select all things data with the stroke of a brush
 
+## Install
 
-Brush hook package for cross filtering charts based on React inline svgs.
-Expermental stage.
+```sh
+npm install react-use-brush
+```
 
-[![CircleCI](https://circleci.com/gh/DavidSanwald/react-use-brush.svg?style=svg)](https://circleci.com/gh/DavidSanwald/react-use-brush)
+## Run tests
+
+```sh
+npm test
+```
+
+## Author
+
+👤 **David Sanwald**
+
+* Website: https://www.davidsanwald.net/
+* Twitter: [@davidsanwald](https://twitter.com/davidsanwald)
+* Github: [@DavidSanwald](https://github.com/DavidSanwald)
+
+## Show your support
+
+Give a ⭐️ if this project helped you!
+
+## 📝 License
+
+Copyright © 2019 [David Sanwald](https://github.com/DavidSanwald).<br />
+This project is [MIT](https://github.com/DavidSanwald/react-use-brush/blob/master/LICENSE) licensed.
+
+***
+_This README was generated with ❤️ by [readme-md-generator](https://github.com/kefranabg/readme-md-generator)_
