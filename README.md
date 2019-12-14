@@ -1,4 +1,4 @@
-<h1 align="center">Welcome to react-use-brush 👋</h1>
+<h1 align="center">Welcome to react-use-brush 🖌</h1>
 <p>
   <a href="https://www.npmjs.com/package/react-use-brush" target="_blank">
     <img alt="Version" src="https://img.shields.io/npm/v/react-use-brush.svg">
@@ -24,12 +24,14 @@
 ## Install
 
 ```sh
-npm i
+npm i -S react-use-brush
 ```
 
 ## Run tests
 
 ```sh
+npm i
+npm run build
 npm run test
 ```
 
@@ -37,9 +39,9 @@ npm run test
 
 👤 **DavidSanwald**
 
-* Website: https://www.davidsanwald.net/
-* Twitter: [@DavidSanwald](https://twitter.com/DavidSanwald)
-* Github: [@DavidSanwald](https://github.com/DavidSanwald)
+- Website: https://www.davidsanwald.net/
+- Twitter: [@DavidSanwald](https://twitter.com/DavidSanwald)
+- Github: [@DavidSanwald](https://github.com/DavidSanwald)
 
 ## Show your support
 
@@ -50,5 +52,6 @@ Give a ⭐️ if this project helped you!
 Copyright © 2019 [DavidSanwald](https://github.com/DavidSanwald).<br />
 This project is [MIT](https://github.com/DavidSanwald/react-use-brush/blob/master/LICENSE) licensed.
 
-***
+---
+
 _This README was generated with ❤️ by [readme-md-generator](https://github.com/kefranabg/readme-md-generator)_
