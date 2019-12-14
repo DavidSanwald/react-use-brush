@@ -1,18 +1,25 @@
-name: Node CI
+name: Run Tests
 
 on: [pull_request]
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v1
-    - uses: actions/setup-node@v1
-      with:
-        node-version: 12
-    - name: npm install, build, and test
-      run: |
-        npm ci
-        npm run build --if-presentnpm test
-        npm test
-      env:
-        CI: true
+      - uses: actions/checkout@v1
+      - uses: actions/setup-node@v1
+        with:
+          node-version: 12
+      - name: Cache NPM dependencies
+        uses: actions/cache@v1
+        with:
+          path: node_modules
+          key: ${{ runner.OS }}-npm-cache-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.OS }}-npm-cache-
+      - name: npm install, build, and test
+        run: |
+          npm ci
+          npm run build --if-presentnpm test
+          npm test
+        env:
+          CI: true
