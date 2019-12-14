@@ -23,6 +23,10 @@ jobs:
             ${{ runner.OS }}-npm-cache-
       - name: Install dependencies
         run: npm ci
+      - name: Build Package
+        run: npm build
+      - name: Run tests
+        run: npm test
       - name: Release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
