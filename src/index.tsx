@@ -210,9 +210,9 @@ const initialState: Brush = {
   selection: { start: [0, 0], current: [0, 0] },
 };
 
-const useBrush = ({ dragMode = true } = {}) => {
+const useBrush = ({ inDragMode = true } = {}) => {
   const [state, dispatch] = React.useReducer(
-    dragMode ? dragReducer : reducer,
+    inDragMode ? dragReducer : reducer,
     initialState
   );
   const ref = React.useRef<null | SVGElement>();
@@ -245,7 +245,7 @@ const useBrush = ({ dragMode = true } = {}) => {
 
   const bind = { onMouseDown, onMouseMove, onMouseLeave, ref };
   const selection = getSelection(state);
-  const rect = dragMode
+  const rect = inDragMode
     ? dimsToRect(state)
     : { ...dimsToRect(state), pointerEvents: 'none' };
   return [state, rect, rectRef, bind, selection] as const;
