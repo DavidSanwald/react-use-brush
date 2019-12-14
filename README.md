@@ -31,8 +31,8 @@ npm i -S react-use-brush
 
 ```sh
 npm i
-npm run build
-npm run test
+npm build
+npm test
 ```
 
 ## Author
@@ -54,4 +54,3 @@ This project is [MIT](https://github.com/DavidSanwald/react-use-brush/blob/maste
 
 ---
 
-_This README was generated with ❤️ by [readme-md-generator](https://github.com/kefranabg/readme-md-generator)_
