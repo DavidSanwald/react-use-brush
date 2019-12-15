@@ -70,16 +70,6 @@
   },
   "release": {
     "branch": "master",
-    "extends": "@jedmao/semantic-release-npm-github-config",
-    "verifyConditions": [
-      "@semantic-release/changelog",
-      "@semantic-release/npm",
-      "@semantic-release/git"
-    ],
-    "prepare": [
-      "@semantic-release/changelog",
-      "@semantic-release/npm",
-      "@semantic-release/git"
-    ]
+    "extends": "@jedmao/semantic-release-npm-github-config"
   }
 }
