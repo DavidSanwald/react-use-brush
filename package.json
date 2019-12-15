@@ -52,6 +52,7 @@
     "@jedmao/semantic-release-npm-github-config": "^1.0.9",
     "@semantic-release/changelog": "3.0.6",
     "@semantic-release/git": "7.0.18",
+    "@semantic-release/github": "^5.5.8",
     "@semantic-release/npm": "5.3.4",
     "@testing-library/react-hooks": "^3.2.1",
     "@types/jest": "^24.0.23",
@@ -69,16 +70,6 @@
   },
   "release": {
     "branch": "master",
-    "extends": "@jedmao/semantic-release-npm-github-config",
-    "verifyConditions": [
-      "@semantic-release/changelog",
-      "@semantic-release/npm",
-      "@semantic-release/git"
-    ],
-    "prepare": [
-      "@semantic-release/changelog",
-      "@semantic-release/npm",
-      "@semantic-release/git"
-    ]
+    "extends": "@jedmao/semantic-release-npm-github-config"
   }
 }
