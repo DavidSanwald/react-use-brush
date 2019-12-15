@@ -18,7 +18,7 @@ jobs:
             ${{ runner.OS }}-npm-cache-
       - name: npm install, build, and test
         run: |
-          npm ci
+          npm i
           npm run build --if-presentnpm test
           npm test
         env:
