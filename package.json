@@ -67,7 +67,6 @@
   },
   "release": {
     "branch": "master",
-    "extends": "@jedmao/semantic-release-npm-github-config",
     "plugins": [
       [
         "@semantic-release/commit-analyzer",
