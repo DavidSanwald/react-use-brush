@@ -34,7 +34,7 @@ npm i -S react-use-brush
 
 ```jsx
 const Chart = () => {
-  const [state, rect, rectRef, bind, selection] = useBrush();
+  const [state, rect, rectRef, bind, selection] = useBrush({ dragMode: true });
   // ...
 
   return (
