@@ -26,8 +26,8 @@ jobs:
         uses: actions/setup-node@v1
         with:
           node-version: ${{ matrix.node }}
-      - name: Install & test/cover
-        run: npm ci && npm run cover
+      - name: Install & test
+        run: npm ci && npm run test
         env:
           CI: true
 
