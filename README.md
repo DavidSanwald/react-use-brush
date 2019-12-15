@@ -1,5 +1,8 @@
 <h1 align="center">Welcome to react-use-brush 🖌</h1>
 <p>
+  <a href="https://github.com/DavidSanwald/react-use-brush/workflows/build/badge.svg" target="_blank">
+    <img alt="Build Status" src="https://github.com/DavidSanwald/react-use-brush/workflows/build/badge.svg">
+  </a>
   <a href="https://www.npmjs.com/package/react-use-brush" target="_blank">
     <img alt="Version" src="https://img.shields.io/npm/v/react-use-brush.svg">
   </a>
@@ -25,6 +28,29 @@
 
 ```sh
 npm i -S react-use-brush
+```
+
+## Usage
+
+```jsx
+const Chart = () => {
+  const [state, rect, rectRef, bind, selection] = useBrush({ dragMode: true });
+  // ...
+
+  return (
+    <>
+      <svg {...bind} width={width} height={height}>
+        <rect
+          {...rect}
+          ref={rectRef}
+          fill="none"
+          stroke="black"
+          pointerEvents="all"
+        />
+      </svg>
+    </>
+  );
+};
 ```
 
 ## Run tests
@@ -53,4 +79,3 @@ Copyright © 2019 [DavidSanwald](https://github.com/DavidSanwald).<br />
 This project is [MIT](https://github.com/DavidSanwald/react-use-brush/blob/master/LICENSE) licensed.
 
 ---
-
