@@ -22,8 +22,6 @@
 
 > brush hook with a nice api to brush and filter your chart data
 
-### 🏠 [Homepage](https://github.com/DavidSanwald/react-use-brush)
-
 ## Install
 
 ```sh
