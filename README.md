@@ -30,6 +30,8 @@ npm i -S react-use-brush
 
 ## Usage
 
+You can try a live demo here: <https://codesandbox.io/s/nervous-rosalind-kfxeq>
+
 ```jsx
 const Chart = () => {
   const [state, rect, rectRef, bind, selection] = useBrush();
