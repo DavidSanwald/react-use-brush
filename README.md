@@ -69,7 +69,7 @@ npm test
 - Twitter: [@DavidSanwald](https://twitter.com/DavidSanwald)
 - Github: [@DavidSanwald](https://github.com/DavidSanwald)
 
-## Show your support
+## Show your 💚
 
 Give a ⭐️ if this project helped you!
 
