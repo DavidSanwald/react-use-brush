@@ -9,7 +9,7 @@
     "netlify:deploy": "npx netlify deploy --dir=./dist -p -m \"$(git log -1 --pretty=%B)\""
   },
   "dependencies": {
-    "d3-scale": "^3.2.0",
+    "d3-scale": "^4.0.2",
     "react-app-polyfill": "^1.0.0",
     "react-spring": "^8.0.27"
   },
