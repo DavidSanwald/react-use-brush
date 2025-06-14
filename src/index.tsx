@@ -15,9 +15,6 @@ type Action =
     }
   | {
       type: 'MOUSE_LEAVE';
-    }
-  | {
-      type: 'MOUSE_LEAVE';
     };
 
 type Dimensions = {
@@ -94,7 +91,9 @@ function getCoordsFromEvent(
     let point = svg.createSVGPoint();
     point.x = event.clientX;
     point.y = event.clientY;
-    point = point.matrixTransform(node.getScreenCTM()!.inverse());
+    const ctm = node.getScreenCTM();
+    if (!ctm) return null;
+    point = point.matrixTransform(ctm.inverse());
     return [point.x, point.y];
   }
   const rect = node.getBoundingClientRect();
@@ -116,11 +115,22 @@ const closeBrush = (brush: Brush): ClosedBrush => {
   };
 };
 
-const sizeBrush = (brush: Brush, point: Point): BrushingBrush => {
+const sizeBrush = (
+  brush: Brush,
+  point: Point,
+  bounds?: Bounds
+): BrushingBrush => {
+  let constrainedPoint = point;
+  if (bounds) {
+    constrainedPoint = [
+      Math.max(bounds.left, Math.min(bounds.right, point[0])),
+      Math.max(bounds.upper, Math.min(bounds.lower, point[1])),
+    ];
+  }
   return {
     status: 'BRUSHING',
     start: brush.start,
-    current: point,
+    current: constrainedPoint,
   };
 };
 
@@ -134,12 +144,52 @@ const addPoints = (pointA: Point, pointB: Point): Point => [
   pointA[1] + pointB[1],
 ];
 
-const moveBrush = (point: Point, brush: DraggingBrush): DraggingBrush => {
+const moveBrush = (
+  point: Point,
+  brush: DraggingBrush,
+  bounds?: Bounds
+): DraggingBrush => {
   const diff: Point = subtractPoints(point, brush.previousPosition);
+  const newStart = addPoints(brush.start, diff);
+  const newCurrent = addPoints(brush.current, diff);
+
+  // Apply bounds constraint if provided
+  if (bounds) {
+    const brushWidth = Math.abs(brush.current[0] - brush.start[0]);
+    const brushHeight = Math.abs(brush.current[1] - brush.start[1]);
+
+    // Calculate constrained positions
+    const minX = Math.min(newStart[0], newCurrent[0]);
+    const minY = Math.min(newStart[1], newCurrent[1]);
+
+    // Apply constraints
+    const constrainedMinX = Math.max(
+      bounds.left,
+      Math.min(bounds.right - brushWidth, minX)
+    );
+    const constrainedMinY = Math.max(
+      bounds.upper,
+      Math.min(bounds.lower - brushHeight, minY)
+    );
+
+    // Adjust diff based on constraints
+    const adjustedDiff: Point = [
+      constrainedMinX - Math.min(brush.start[0], brush.current[0]),
+      constrainedMinY - Math.min(brush.start[1], brush.current[1]),
+    ];
+
+    return {
+      status: 'DRAGGING',
+      start: addPoints(brush.start, adjustedDiff),
+      current: addPoints(brush.current, adjustedDiff),
+      previousPosition: point,
+    };
+  }
+
   return {
     status: 'DRAGGING',
-    start: addPoints(brush.start, diff),
-    current: addPoints(brush.current, diff),
+    start: newStart,
+    current: newCurrent,
     previousPosition: point,
   };
 };
@@ -149,7 +199,7 @@ const getSelection = (brush: Brush): Bounds => {
   return dimsToBounds(brush);
 };
 
-function reducer(state: Brush, action: Action): Brush {
+function reducer(state: Brush, action: Action, bounds?: Bounds): Brush {
   switch (action.type) {
     case 'MOUSE_DOWN':
       return {
@@ -159,18 +209,20 @@ function reducer(state: Brush, action: Action): Brush {
       };
     case 'MOUSE_MOVE':
       return state.status === 'BRUSHING' || state.status === 'BRUSH_START'
-        ? sizeBrush(state, action.payload)
+        ? sizeBrush(state, action.payload, bounds)
         : state;
     case 'MOUSE_UP':
       return closeBrush(state);
     case 'MOUSE_LEAVE':
-      return state;
+      return state.status === 'BRUSHING' || state.status === 'BRUSH_START'
+        ? closeBrush(state)
+        : state;
     default:
       return state;
   }
 }
 
-function dragReducer(state: Brush, action: Action): Brush {
+function dragReducer(state: Brush, action: Action, bounds?: Bounds): Brush {
   switch (action.type) {
     case 'MOUSE_DOWN':
       return {
@@ -179,16 +231,20 @@ function dragReducer(state: Brush, action: Action): Brush {
         current: action.payload,
       };
     case 'MOUSE_DOWN_INSIDE':
-      return {
-        ...state,
-        status: 'DRAG_START',
-        previousPosition: action.payload,
-      };
+      if (state.status === 'CLOSED' && 'selection' in state) {
+        return {
+          start: state.selection.start,
+          current: state.selection.current,
+          status: 'DRAG_START' as const,
+          previousPosition: action.payload,
+        };
+      }
+      return state;
     case 'MOUSE_MOVE':
       return state.status === 'BRUSHING' || state.status === 'BRUSH_START'
-        ? sizeBrush(state, action.payload)
+        ? sizeBrush(state, action.payload, bounds)
         : state.status === 'DRAG_START' || state.status === 'DRAGGING'
-        ? moveBrush(action.payload, state)
+        ? moveBrush(action.payload, state, bounds)
         : { ...state };
     case 'MOUSE_UP':
       return state.status === 'BRUSHING' || state.status === 'BRUSH_START'
@@ -197,7 +253,11 @@ function dragReducer(state: Brush, action: Action): Brush {
         ? { ...state, status: 'DRAG_END' }
         : { ...state };
     case 'MOUSE_LEAVE':
-      return state;
+      return state.status === 'BRUSHING' || state.status === 'BRUSH_START'
+        ? closeBrush(state)
+        : state.status === 'DRAGGING' || state.status === 'DRAG_START'
+        ? { ...state, status: 'DRAG_END' as const }
+        : state;
     default:
       return state;
   }
@@ -210,29 +270,39 @@ const initialState: Brush = {
   selection: { start: [0, 0], current: [0, 0] },
 };
 
-const useBrush = ({ inDragMode = true } = {}) => {
+const useBrush = ({
+  inDragMode = true,
+  bounds,
+}: { inDragMode?: boolean; bounds?: Bounds } = {}) => {
   const [state, dispatch] = React.useReducer(
-    inDragMode ? dragReducer : reducer,
+    (state: Brush, action: Action) =>
+      inDragMode
+        ? dragReducer(state, action, bounds)
+        : reducer(state, action, bounds),
     initialState
   );
-  const ref = React.useRef<null | SVGElement>();
-  const rectRef = React.useRef<null | SVGElement>();
+  const ref = React.useRef<SVGElement | null>(null);
+  const rectRef = React.useRef<SVGElement | null>(null);
 
   const onMouseDown = (e: React.MouseEvent<SVGElement>) => {
-    e.persist();
+    if (!ref.current) return;
     const coords = getCoordsFromEvent(ref.current as SVGSVGElement, e);
+    if (!coords) return;
+
     if (rectRef.current && !rectRef.current.contains(e.target as Node)) {
-      dispatch({ type: 'MOUSE_DOWN', payload: coords! });
+      dispatch({ type: 'MOUSE_DOWN', payload: coords });
     } else {
-      dispatch({ type: 'MOUSE_DOWN_INSIDE', payload: coords! });
+      dispatch({ type: 'MOUSE_DOWN_INSIDE', payload: coords });
     }
   };
   const onMouseUp = () => {
     dispatch({ type: 'MOUSE_UP' });
   };
   const onMouseMove = (e: React.MouseEvent<SVGElement>) => {
+    if (!ref.current) return;
     const coords = getCoordsFromEvent(ref.current as SVGSVGElement, e);
-    dispatch({ type: 'MOUSE_MOVE', payload: coords! });
+    if (!coords) return;
+    dispatch({ type: 'MOUSE_MOVE', payload: coords });
   };
   const onMouseLeave = () => {
     dispatch({ type: 'MOUSE_LEAVE' });
@@ -241,13 +311,14 @@ const useBrush = ({ inDragMode = true } = {}) => {
   React.useEffect(() => {
     window.addEventListener('mouseup', onMouseUp);
     return () => window.removeEventListener('mouseup', onMouseUp);
-  });
+  }, []);
 
   const bind = { onMouseDown, onMouseMove, onMouseLeave, ref };
   const selection = getSelection(state);
-  const rect = inDragMode
-    ? dimsToRect(state)
-    : { ...dimsToRect(state), pointerEvents: 'none' };
+  const rect = {
+    ...dimsToRect(state),
+    ...(inDragMode ? {} : { pointerEvents: 'none' as const }),
+  };
   return [state, rect, rectRef, bind, selection] as const;
 };
 
