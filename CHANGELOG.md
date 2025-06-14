@@ -3,6 +3,19 @@
 All notable changes to this project will be documented in this file. See
 [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.2.0](https://github.com/DavidSanwald/react-use-brush/compare/v1.1.4...v1.2.0) (2025-06-14)
+
+
+### Bug Fixes
+
+* regenerate package-lock.json to fix npm install issues ([e04102a](https://github.com/DavidSanwald/react-use-brush/commit/e04102a73ee6f0a0063b26dad0be7191ce1ff338))
+* update semantic-release and plugins to compatible versions ([95037e1](https://github.com/DavidSanwald/react-use-brush/commit/95037e1396cbe711d229162db6050ea1e1610fdd))
+
+
+### Features
+
+* add bounds validation and fix critical bugs ([1f8fbbb](https://github.com/DavidSanwald/react-use-brush/commit/1f8fbbb0bdb2b98117a2653e4fd5b09fa8147158))
+
 ## [1.1.4](https://github.com/DavidSanwald/react-use-brush/compare/v1.1.3...v1.1.4) (2020-01-08)
 
 ## [1.1.3](https://github.com/DavidSanwald/react-use-brush/compare/v1.1.2...v1.1.3) (2019-12-19)
